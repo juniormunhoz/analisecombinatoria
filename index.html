@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operação Enigma: A Fuga do Laboratório Quântico</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- =====================================================
+       TELA 1 — TELA INICIAL
+       Somente uma tela fica visível por vez: a que tem a
+       classe "ativa" (controlado no script.js).
+       ===================================================== -->
+  <section id="tela-inicial" class="tela ativa">
+    <div class="painel">
+      <p class="alerta-piscando">⚠ ALERTA DE CONTENÇÃO — NÍVEL MÁXIMO ⚠</p>
+      <h1>Operação Enigma</h1>
+      <h2 class="subtitulo">A Fuga do Laboratório Quântico</h2>
+
+      <p class="narrativa">
+        Um experimento com o computador quântico saiu do controle e o sistema de segurança
+        trancou o complexo inteiro... com você lá dentro! São <strong>5 salas lacradas</strong>,
+        e cada porta só abre com códigos gerados a partir de desafios de
+        <strong>Análise Combinatória</strong>. Investigue os objetos de cada sala, resolva os
+        desafios e escape antes que o <strong>oxigênio acabe</strong>.
+      </p>
+
+      <div class="regras">
+        <h3>📜 Regras rápidas</h3>
+        <ul>
+          <li>🚪 5 salas e <strong>12 códigos</strong> para escapar (1 + 2 + 2 + 3 + 4).</li>
+          <li>❤️ Você tem <strong>5 vidas</strong>: cada código errado custa 1 vida.</li>
+          <li>⏱️ <strong>20 minutos</strong> de oxigênio no cronômetro.</li>
+          <li>🖱️ Clique nos objetos da sala: alguns trazem <strong>desafios</strong>, outros <strong>pistas</strong>.</li>
+          <li>🔁 Errou? Você mantém seus acertos e recebe um <strong>novo desafio inédito</strong>.</li>
+        </ul>
+      </div>
+
+      <div class="botoes">
+        <button id="btn-iniciar" class="btn btn-principal">🚀 Iniciar Fuga</button>
+        <button class="btn btn-som">🔊 Som</button>
+        <button id="btn-gabarito" class="btn">📚 Banco de Questões (Gabarito)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       TELA 2 — JOGO (HUD + SALA)
+       ===================================================== -->
+  <section id="tela-jogo" class="tela fase-1">
+
+    <!-- HUD: barra superior com as informações da partida -->
+    <header class="hud">
+      <div class="hud-item">
+        <span class="hud-rotulo">Fase</span>
+        <span id="hud-fase" class="hud-valor">1/5</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-rotulo">Acertos na fase</span>
+        <span id="hud-acertos-fase" class="hud-valor">0/1</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-rotulo">Acertos totais</span>
+        <span id="hud-acertos-totais" class="hud-valor">0/12</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-rotulo">Vidas</span>
+        <span id="hud-vidas" class="hud-valor hud-vidas">❤️❤️❤️❤️❤️</span>
+      </div>
+      <div class="hud-item">
+        <span class="hud-rotulo">Oxigênio</span>
+        <span id="hud-tempo" class="hud-valor">20:00</span>
+      </div>
+      <button class="btn btn-som btn-pequeno">🔊 Som</button>
+    </header>
+
+    <!-- SALA: cenário interativo (os objetos são criados pelo script.js) -->
+    <main id="sala" class="sala">
+      <div class="sala-topo">
+        <p id="sala-nivel" class="sala-nivel"></p>
+        <h2 id="sala-nome" class="sala-nome"></h2>
+      </div>
+
+      <!-- Aqui entram os botões dos objetos (terminal, cofre, porta...) -->
+      <div id="sala-objetos" class="sala-objetos"></div>
+
+      <!-- Fechadura: um cadeado para cada acerto exigido na fase -->
+      <div id="painel-fechadura" class="painel-fechadura">
+        <span>Fechadura da porta:</span>
+        <div id="cadeados" class="cadeados"></div>
+      </div>
+
+      <!-- Caixa de mensagens da narrativa (pistas, avisos) -->
+      <p id="mensagem-sala" class="mensagem-sala"></p>
+    </main>
+  </section>
+
+  <!-- =====================================================
+       TELA 3 — VITÓRIA
+       ===================================================== -->
+  <section id="tela-vitoria" class="tela">
+    <div class="painel painel-vitoria">
+      <p class="icone-final">🏆</p>
+      <h1>Você escapou!</h1>
+      <p class="narrativa">
+        A porta do Núcleo Central se abre e o ar fresco invade seus pulmões.
+        Graças ao seu domínio de Análise Combinatória, a Operação Enigma foi um sucesso!
+      </p>
+      <ul id="estatisticas-vitoria" class="estatisticas"></ul>
+      <div class="botoes">
+        <button class="btn btn-principal btn-reiniciar">🔁 Iniciar Nova Partida</button>
+        <button class="btn btn-menu">🏠 Menu Inicial</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       TELA 4 — DERROTA
+       ===================================================== -->
+  <section id="tela-derrota" class="tela">
+    <div class="painel painel-derrota">
+      <p class="icone-final">💀</p>
+      <h1>Fuga fracassada</h1>
+      <p id="motivo-derrota" class="narrativa"></p>
+      <ul id="estatisticas-derrota" class="estatisticas"></ul>
+      <div class="botoes">
+        <button class="btn btn-principal btn-reiniciar">🔁 Iniciar Nova Partida</button>
+        <button class="btn btn-menu">🏠 Menu Inicial</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =====================================================
+       MODAL — DESAFIO (QUESTÃO)
+       Abre por cima da sala quando o jogador clica em um
+       objeto do tipo "desafio".
+       ===================================================== -->
+  <div id="modal-questao" class="modal">
+    <div id="caixa-questao" class="modal-caixa">
+      <button id="btn-fechar-questao" class="btn-fechar" title="Fechar (a questão continua pendente)">✖</button>
+      <p id="questao-origem" class="questao-origem"></p>
+      <p id="questao-tema" class="questao-tema"></p>
+      <p id="questao-enunciado" class="questao-enunciado"></p>
+      <div id="questao-alternativas" class="alternativas"></div>
+      <div id="questao-feedback" class="feedback oculto"></div>
+      <button id="btn-continuar" class="btn btn-principal oculto">Continuar ➜</button>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       MODAL — BANCO DE QUESTÕES (GABARITO DO PROJETO)
+       O conteúdo é montado automaticamente a partir do
+       questions.js (função montarGabarito no script.js).
+       ===================================================== -->
+  <div id="modal-gabarito" class="modal">
+    <div class="modal-caixa modal-largo">
+      <button id="btn-fechar-gabarito" class="btn-fechar" title="Fechar">✖</button>
+      <h2>📚 Banco de Questões — Gabarito do Projeto</h2>
+      <p class="texto-suave">Clique em uma questão para ver alternativas, resposta e resolução.</p>
+      <button id="btn-expandir" class="btn btn-pequeno">↕ Expandir / recolher tudo</button>
+      <div id="gabarito-conteudo"></div>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       OVERLAY — TRANSIÇÃO ENTRE SALAS
+       ===================================================== -->
+  <div id="transicao" class="transicao">
+    <p id="transicao-texto"></p>
+  </div>
+
+  <!-- A ordem importa: primeiro o banco de questões, depois a lógica -->
+  <script src="questions.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

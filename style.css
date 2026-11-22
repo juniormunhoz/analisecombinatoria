@@ -1,0 +1,656 @@
+/* =========================================================
+   OPERAÇÃO ENIGMA: A FUGA DO LABORATÓRIO QUÂNTICO
+   style.css — Visual temático (hacker / laboratório)
+   ---------------------------------------------------------
+   Organização:
+   1. Variáveis e cores por fase
+   2. Base (reset, corpo, efeito de monitor)
+   3. Telas e painéis
+   4. Botões
+   5. HUD (barra superior)
+   6. Sala e objetos interativos
+   7. Modais (questão e gabarito)
+   8. Telas finais e transição
+   9. Animações
+   10. Responsividade (celular)
+   ========================================================= */
+
+/* ---------- 1. VARIÁVEIS E CORES POR FASE ---------- */
+:root {
+  --fundo: #070b14;
+  --painel: #0f1726;
+  --texto: #d7e3f4;
+  --texto-suave: #8a9bb5;
+  --verde: #39ff14;      /* cor de "destrancado" / acerto */
+  --vermelho: #ff3b3b;   /* cor de alerta / erro */
+  --cor-fase: #00e5ff;   /* cor principal (muda a cada fase) */
+  --fonte: 'Courier New', Consolas, monospace;
+}
+
+/* Basta trocar a classe "fase-N" de um elemento para trocar a cor
+   de tudo que usa var(--cor-fase) dentro dele. */
+.fase-1 { --cor-fase: #00e5ff; } /* ciano  — Triagem       */
+.fase-2 { --cor-fase: #b388ff; } /* roxo   — Servidores    */
+.fase-3 { --cor-fase: #ffc107; } /* âmbar  — Cofre         */
+.fase-4 { --cor-fase: #ff4fa3; } /* rosa   — Criptografia  */
+.fase-5 { --cor-fase: #ff6d3a; } /* laranja — Núcleo       */
+
+/* ---------- 2. BASE ---------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--fonte);
+  color: var(--texto);
+  background: radial-gradient(circle at top, #10203a, var(--fundo) 70%);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* Linhas horizontais finas por cima de tudo: efeito de monitor antigo */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none; /* não atrapalha os cliques */
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px);
+  z-index: 999;
+}
+
+.oculto { display: none !important; }
+.texto-suave { color: var(--texto-suave); margin: 6px 0 10px; }
+
+/* ---------- 3. TELAS E PAINÉIS ---------- */
+.tela {
+  display: none;              /* toda tela começa escondida... */
+  min-height: 100vh;
+  padding: 20px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tela.ativa {
+  display: flex;              /* ...e só aparece a que tiver "ativa" */
+  animation: aparecer 0.6s ease;
+}
+
+#tela-jogo.ativa { justify-content: flex-start; }
+
+.painel {
+  width: 100%;
+  max-width: 760px;
+  background: var(--painel);
+  border: 2px solid var(--cor-fase);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 0 30px -8px var(--cor-fase);
+  text-align: center;
+}
+
+h1 {
+  font-size: 2.6rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--cor-fase);
+  text-shadow: 0 0 12px var(--cor-fase);
+}
+
+.subtitulo {
+  font-size: 1.2rem;
+  color: var(--texto);
+  margin-bottom: 18px;
+}
+
+.alerta-piscando {
+  color: var(--vermelho);
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  animation: piscar 1.2s infinite;
+}
+
+.narrativa { margin: 14px 0; text-align: justify; }
+
+.regras {
+  text-align: left;
+  background: rgba(0, 0, 0, 0.35);
+  border-left: 4px solid var(--cor-fase);
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin: 18px 0;
+}
+
+.regras h3 { margin-bottom: 8px; color: var(--cor-fase); }
+.regras ul { list-style: none; }
+.regras li { margin: 6px 0; }
+
+.botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* ---------- 4. BOTÕES ---------- */
+.btn {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 12px 20px;
+  border: 2px solid var(--cor-fase);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--cor-fase);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.btn:hover {
+  background: var(--cor-fase);
+  color: #000;
+  box-shadow: 0 0 15px var(--cor-fase);
+}
+
+.btn-principal {
+  background: var(--cor-fase);
+  color: #000;
+  font-weight: bold;
+}
+
+.btn-pequeno { padding: 6px 12px; font-size: 0.85rem; }
+
+.btn-fechar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--texto-suave);
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.btn-fechar:hover { color: var(--vermelho); }
+
+/* ---------- 5. HUD ---------- */
+.hud {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--painel);
+  border: 2px solid var(--cor-fase);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 0 20px -8px var(--cor-fase);
+}
+
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 90px;
+}
+
+.hud-rotulo {
+  font-size: 0.7rem;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+}
+
+.hud-valor {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: var(--cor-fase);
+}
+
+.hud-vidas { letter-spacing: 2px; }
+
+/* Último minuto: cronômetro fica vermelho e piscando */
+.tempo-critico {
+  color: var(--vermelho) !important;
+  animation: piscar 1s infinite;
+}
+
+/* ---------- 6. SALA E OBJETOS ---------- */
+.sala {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 470px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 20px 20px;
+  border: 2px solid var(--cor-fase);
+  border-radius: 12px;
+  overflow: hidden;
+  /* Várias camadas de fundo: sombra no chão + grade "tecnológica" + luz do teto */
+  background:
+    linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, 0.6)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 40px),
+    radial-gradient(circle at 50% 0%, #1b2a44, #060a12);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8), 0 0 25px -8px var(--cor-fase);
+}
+
+/* Faixa de luz de alarme no teto da sala */
+.sala::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--vermelho);
+  box-shadow: 0 0 20px 6px var(--vermelho);
+  animation: alarme 2s infinite;
+}
+
+.sala-topo { text-align: center; }
+
+.sala-nivel {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  color: var(--cor-fase);
+  text-transform: uppercase;
+}
+
+.sala-nome {
+  font-size: 1.7rem;
+  color: var(--texto);
+  text-shadow: 0 0 10px var(--cor-fase);
+}
+
+/* Área onde ficam os objetos; a borda inferior funciona como "chão" */
+.sala-objetos {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 3px solid var(--cor-fase);
+}
+
+/* Cada objeto da sala é um <button> */
+.objeto {
+  position: relative;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 14px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px dashed transparent;
+  border-radius: 12px;
+  color: var(--texto);
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.objeto:hover {
+  transform: translateY(-6px) scale(1.05);
+  border-color: var(--cor-fase);
+  box-shadow: 0 0 20px var(--cor-fase);
+}
+
+.objeto-icone {
+  font-size: 4rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 8px var(--cor-fase));
+  animation: flutuar 3s ease-in-out infinite;
+}
+
+/* Atraso diferente para cada objeto não flutuar "em sincronia" */
+.objeto:nth-child(2) .objeto-icone { animation-delay: 0.6s; }
+.objeto:nth-child(3) .objeto-icone { animation-delay: 1.2s; }
+.objeto:nth-child(4) .objeto-icone { animation-delay: 1.8s; }
+.objeto:nth-child(5) .objeto-icone { animation-delay: 2.4s; }
+.objeto:nth-child(6) .objeto-icone { animation-delay: 3.0s; }
+
+.objeto-nome {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Etiqueta "DESAFIO" nos objetos que abrem questões */
+.objeto-desafio::before {
+  content: 'DESAFIO';
+  position: absolute;
+  top: -10px;
+  font-size: 0.6rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--cor-fase);
+  color: #000;
+  animation: piscar 2s infinite;
+}
+
+/* Objeto com desafio já resolvido na sala */
+.objeto-desafio.resolvido {
+  border-color: rgba(57, 255, 20, 0.4);
+  background: rgba(57, 255, 20, 0.05);
+}
+
+.objeto-desafio.resolvido:hover {
+  border-color: var(--verde);
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
+}
+
+.objeto-desafio.resolvido .objeto-icone {
+  filter: drop-shadow(0 0 6px var(--verde));
+}
+
+.objeto-desafio.resolvido::before {
+  content: 'RESOLVIDO ✓';
+  background: var(--verde);
+  color: #000;
+  animation: none;
+}
+
+.objeto-porta .objeto-icone { font-size: 5rem; }
+
+/* Porta destrancada: brilho verde pulsando */
+.objeto-porta.destrancada {
+  border: 2px solid var(--verde);
+  animation: brilhoVerde 0.8s ease-in-out infinite alternate;
+}
+
+.objeto-porta.destrancada .objeto-icone { filter: drop-shadow(0 0 14px var(--verde)); }
+.objeto-porta.destrancada .objeto-nome { color: var(--verde); font-weight: bold; }
+
+/* Fechadura (cadeados) */
+.painel-fechadura {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.cadeados { display: flex; gap: 8px; }
+
+.cadeado {
+  font-size: 1.8rem;
+  opacity: 0.6;
+}
+
+.cadeado.aberto {
+  opacity: 1;
+  filter: drop-shadow(0 0 8px var(--verde));
+  animation: destravar 0.6s ease;
+}
+
+/* Caixa de mensagens da narrativa */
+.mensagem-sala {
+  min-height: 52px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-left: 4px solid var(--cor-fase);
+  border-radius: 6px;
+  white-space: pre-line; /* respeita as quebras de linha "\n" */
+}
+
+.mensagem-sala.animar { animation: aparecer 0.4s ease; }
+
+/* ---------- 7. MODAIS ---------- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.modal.aberto { display: flex; }
+
+.modal-caixa {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 28px 24px 24px;
+  background: var(--painel);
+  border: 2px solid var(--cor-fase);
+  border-radius: 12px;
+  box-shadow: 0 0 30px -5px var(--cor-fase);
+  animation: subir 0.4s ease;
+}
+
+.modal-largo { max-width: 920px; }
+.modal-largo h2 { color: var(--cor-fase); padding-right: 30px; }
+
+.questao-origem {
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.questao-tema {
+  display: inline-block;
+  margin: 6px 0 12px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: var(--cor-fase);
+  color: #000;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.questao-enunciado {
+  font-size: 1.1rem;
+  margin-bottom: 18px;
+}
+
+.alternativas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.alternativa {
+  padding: 14px;
+  font-family: inherit;
+  font-size: 1.05rem;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: var(--texto);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.alternativa:hover:not(:disabled) {
+  border-color: var(--cor-fase);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.alternativa:disabled { cursor: default; opacity: 0.6; }
+
+.alternativa.correta {
+  opacity: 1;
+  border-color: var(--verde);
+  background: rgba(57, 255, 20, 0.15);
+  box-shadow: 0 0 12px var(--verde);
+}
+
+.alternativa.errada {
+  opacity: 1;
+  border-color: var(--vermelho);
+  background: rgba(255, 59, 59, 0.15);
+}
+
+.feedback {
+  margin: 18px 0 14px;
+  padding: 14px;
+  border-radius: 8px;
+}
+
+.feedback.sucesso { border: 2px solid var(--verde); background: rgba(57, 255, 20, 0.08); }
+.feedback.erro { border: 2px solid var(--vermelho); background: rgba(255, 59, 59, 0.08); }
+
+.resolucao {
+  margin-top: 8px;
+  white-space: pre-line;
+  color: var(--texto);
+}
+
+#btn-continuar { width: 100%; }
+
+/* Gabarito */
+.gabarito-fase {
+  margin-top: 22px;
+  padding-left: 12px;
+  border-left: 4px solid var(--cor-fase);
+}
+
+.gabarito-fase h3 { color: var(--cor-fase); margin-bottom: 8px; }
+
+.gabarito-questao {
+  margin: 8px 0;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+}
+
+.gabarito-questao summary { cursor: pointer; }
+.gabarito-questao ol { margin: 8px 0 8px 28px; }
+.gabarito-correta { color: var(--verde); font-weight: bold; }
+.gabarito-resposta { color: var(--verde); font-weight: bold; }
+
+/* ---------- 8. TELAS FINAIS E TRANSIÇÃO ---------- */
+.painel-vitoria { --cor-fase: var(--verde); }
+.painel-derrota { --cor-fase: var(--vermelho); }
+
+.icone-final { font-size: 4.5rem; animation: flutuar 2.5s ease-in-out infinite; }
+
+.estatisticas {
+  list-style: none;
+  margin: 18px auto;
+  max-width: 420px;
+  text-align: left;
+}
+
+.estatisticas li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.estatisticas strong { color: var(--cor-fase); }
+
+.transicao {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;    /* invisível e "transparente" a cliques */
+  transition: opacity 0.6s ease;
+}
+
+.transicao.ativa {
+  opacity: 1;
+  pointer-events: all;     /* bloqueia cliques durante a transição */
+}
+
+.transicao p {
+  font-size: 2rem;
+  color: var(--verde);
+  text-shadow: 0 0 15px var(--verde);
+}
+
+.transicao small { font-size: 1.1rem; color: var(--texto); text-shadow: none; }
+
+/* ---------- 9. ANIMAÇÕES ---------- */
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Entrada da sala: desliza da direita */
+@keyframes entradaSala {
+  from { opacity: 0; transform: translateX(80px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animar-entrada { animation: entradaSala 0.7s ease; }
+
+@keyframes subir {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Tremor ao errar */
+@keyframes tremer {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}
+.tremer { animation: tremer 0.45s ease; }
+
+/* Brilho verde da porta destrancada */
+@keyframes brilhoVerde {
+  from { box-shadow: 0 0 10px var(--verde); }
+  to   { box-shadow: 0 0 40px 10px var(--verde); }
+}
+
+@keyframes flutuar {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+@keyframes piscar {
+  50% { opacity: 0.35; }
+}
+
+@keyframes alarme {
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 1; }
+}
+
+@keyframes destravar {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.5) rotate(-15deg); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- 10. RESPONSIVIDADE ---------- */
+@media (max-width: 640px) {
+  h1 { font-size: 1.8rem; }
+  .painel { padding: 20px 16px; }
+  .hud { justify-content: center; }
+  .hud-item { min-width: 70px; }
+  .hud-valor { font-size: 1rem; }
+  .sala-nome { font-size: 1.3rem; }
+  .objeto { min-width: 100px; padding: 12px 8px 10px; }
+  .objeto-icone { font-size: 3rem; }
+  .objeto-porta .objeto-icone { font-size: 3.6rem; }
+  .alternativas { grid-template-columns: 1fr; }
+  .transicao p { font-size: 1.4rem; }
+}
